@@ -3,16 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Nowhere — Technical Infrastructure for Empirical Journalism</title>
+    <title>
+      Nowhere — Build the Infrastructure for a New, Rigorous Journalism
+    </title>
 
     <!-- Social / sharing -->
     <meta
       name="description"
-      content="Terminal-first infrastructure for evidence-first journalism. Evidence before interpretation; provenance before narrative."
+      content="A call to help build terminal-first, Rust-native infrastructure for evidence-first journalism. Evidence before interpretation; provenance before narrative."
     />
     <meta
       property="og:title"
-      content="Nowhere — Technical Infrastructure for Empirical Journalism"
+      content="Nowhere — Build the Infrastructure for a New, Rigorous Journalism"
     />
     <meta
       property="og:description"
@@ -20,6 +22,7 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="assets/demo.gif" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <link
       rel="icon"
@@ -36,13 +39,13 @@
       </div>
       <nav>
         <a href="#philosophy">philosophy</a>
-        <a href="#journalism">for-journalists</a>
-        <a href="#engineering">for-engineers</a>
+        <a href="#architecture">architecture</a>
         <a href="#roadmap">roadmap</a>
         <a href="#phone">nowhere-phone</a>
         <a href="#demo">demo</a>
-        <a href="#get-started">get-started</a>
-        <a href="https://github.com/YOUR_ORG/view-from-nowhere" rel="noopener"
+        <a
+          href="https://github.com/viewfromnowhere/view-from-nowhere"
+          rel="noopener"
           >github</a
         >
       </nav>
@@ -51,28 +54,21 @@
     <main class="container">
       <!-- Hero -->
       <section class="hero" id="about">
-        <h1>Technical infrastructure for empirical journalism</h1>
+        <h1>Help build the infrastructure for a new, rigorous journalism</h1>
         <p class="tagline">
-          Nowhere is a terminal-first toolkit that treats
+          Nowhere is a terminal-first, Rust-native project that treats
           <strong>evidence</strong>, <strong>provenance</strong>, and
           <strong>reproducibility</strong> as first principles.
         </p>
         <div class="cta">
-          <a class="btn" href="#philosophy">Read the philosophy</a>
           <a
-            class="btn ghost"
-            href="https://github.com/YOUR_ORG/view-from-nowhere"
+            class="btn"
+            href="https://github.com/viewfromnowhere/view-from-nowhere"
             rel="noopener"
-            >View on GitHub</a
+            >Contribute on GitHub</a
           >
+          <a class="btn ghost" href="#philosophy">Read the manifesto</a>
         </div>
-        <pre class="terminal">
-<span class="muted"># claim-centric workflow</span>
-$ /claim "Did X happen as reported?"
-$ /search "source:X OR term:Y" --since 2d
-$ /review --accept evidence
-$ /bundle --sign --export evidence.json
-      </pre>
       </section>
 
       <!-- Philosophy / Manifesto -->
@@ -105,112 +101,95 @@ $ /bundle --sign --export evidence.json
         </ul>
         <p class="muted">
           Nowhere is not a newsroom. It is the substrate on which rigorous
-          journalism can be practiced in the open.
+          journalism can be practiced in the open — by reporters, OSINT
+          researchers, and the public.
         </p>
       </section>
 
-      <!-- For Journalists -->
-      <section id="journalism" class="block">
-        <h2>For journalists — a claim-centric workflow</h2>
-        <ol class="list numbered">
-          <li>
-            <strong>Declare a claim.</strong> Precisely state the proposition
-            under review.
-          </li>
-          <li>
-            <strong>Gather artifacts.</strong> Search social, documents,
-            archives; capture context.
-          </li>
-          <li>
-            <strong>Normalize &amp; link.</strong> Extract entities/claims;
-            attach typed provenance (supports/refutes/derived-from).
-          </li>
-          <li>
-            <strong>Review.</strong> Human-in-the-loop acceptance, annotation,
-            and counter-evidence.
-          </li>
-          <li>
-            <strong>Publish.</strong> Export an auditable bundle: evidence graph
-            + logs + config.
-          </li>
-        </ol>
-        <p>
-          Designed for independent reporters, watchdogs, civic data orgs, and
-          newsrooms with technical staff.
-        </p>
-      </section>
+      <!-- Architecture (high-level) -->
+      <section id="architecture" class="block">
+        <h2>Architecture — what we’re building</h2>
 
-      <!-- For Engineers -->
-      <section id="engineering" class="block">
-        <h2>For engineers — how it works</h2>
-        <ul class="list">
-          <li>
-            <strong>Rust actor runtime</strong> orchestrates acquisition →
-            normalization → storage with bounded mailboxes and shared rate
-            limiting.
-          </li>
-          <li>
-            <strong>LLM adapters</strong> (OpenAI, Ollama) power search and
-            normalization with <code>prompt_version</code> recorded for
-            determinism.
-          </li>
-          <li>
-            <strong>Evidence graph</strong> (v1) on SQLite: <code>record</code>,
-            <code>link</code>, <code>claim</code>, FTS views, append-only
-            semantics.
-          </li>
-          <li>
-            <strong>TUI control plane</strong>: set claims, watch pipelines,
-            accept/reject artifacts, export signed bundles.
-          </li>
-          <li>
-            <strong>Modular crates</strong>: config, HTTP, social, drivers,
-            observability — clean boundaries, swappable integrations.
-          </li>
-        </ul>
+        <div class="card">
+          <h3>1) Actor Runtime</h3>
+          <p>
+            A Rust actor system orchestrating
+            <em>acquisition → normalization → storage</em> with bounded
+            mailboxes and shared rate limiting. Deterministic by design;
+            observability baked in.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>2) Evidence Graph</h3>
+          <p>
+            An append-only, queryable ledger of <code>record</code>,
+            <code>link</code>, and <code>claim</code> with typed provenance
+            (<em>supports</em>, <em>refutes</em>, <em>derived-from</em>). Built
+            for audit, replay, and publication as signed bundles.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>3) Graph-Trained Models (longer-term)</h3>
+          <p>
+            Bespoke LLMs trained <em>over</em> the evidence graph so models
+            learn to prefer grounded reasoning and provenance — refusing
+            speculation when sources are absent.
+          </p>
+        </div>
+
         <pre class="terminal small">
-# run locally
-$ cargo run -p nowhere-app
-
-# config
-$ cat nowhere.yaml
-runtime: { worker_threads: 0 }
-actors:
-  - { id: twitter, kind: twitter_search, concurrency: 4 }
-  - { id: normalizer, kind: llm_normalize, backend: { provider: openai, model: gpt-4o-mini, prompt_version: normalize@v3 } }
-  - { id: store, kind: sqlite_store, database_url: sqlite://nowhere.db }
+Raw data (social, docs, archives)
+    ↓
+Actors (acquire → normalize)
+    ↓
+Evidence Graph (records + links + claims)
+    ↓
+Human review (accept / annotate / counter-evidence)
+    ↓
+Auditable bundle (signed, reproducible)
       </pre
         >
+
+        <p class="muted">
+          Configuration, commands, and implementation details live in the
+          README. This page is the call to build the foundation together.
+        </p>
       </section>
 
       <!-- Roadmap -->
       <section id="roadmap" class="block">
-        <h2>Roadmap — toward evidence-first journalism</h2>
+        <h2>Roadmap</h2>
         <ul class="list">
           <li>
-            <strong>Evidence Graph v1 → v2</strong>: typed records/claims/links;
+            <strong>Evidence Graph v1 → v2</strong>: typed entities;
             deterministic views; signed commits.
-          </li>
-          <li>
-            <strong>Evidence-trained models</strong>: fine-tune LLMs on
-            graph-grounded corpora to favor provenance over speculation.
           </li>
           <li>
             <strong>Reproducible pipelines</strong>: locked models/prompts;
             replayable investigations.
           </li>
           <li>
-            <strong>Distributed event store</strong>: append-only DAG with
+            <strong>Graph reasoning</strong>: confidence propagation across
+            supports/refutes.
+          </li>
+          <li>
+            <strong>Graph-trained LLMs</strong>: fine-tuning on
+            provenance-grounded corpora.
+          </li>
+          <li>
+            <strong>Distributed event store</strong>: append-only DAG;
             peer-verifiable bundles.
           </li>
           <li>
-            <strong>Offline/field mode</strong>: secure capture; later sync;
+            <strong>Field/offline mode</strong>: secure capture → later sync;
             reproducible builds.
           </li>
         </ul>
         <p class="muted">
           See <code>VISION.md</code> and <code>ARCHITECTURE.md</code> in the
-          repo for the long arc.
+          repo for deeper detail.
         </p>
       </section>
 
@@ -224,8 +203,8 @@ actors:
         </p>
         <p>
           <strong>Seeking private collaborators by January 2026</strong> prior
-          to a public release. If your work intersects resilient comms, secure
-          UX, or on-device ML, we’d love to talk.
+          to a public release. Relevant domains include resilient comms, secure
+          UX, and on-device ML.
         </p>
       </section>
 
@@ -233,51 +212,22 @@ actors:
       <section id="demo" class="block">
         <h2>Demo</h2>
         <p class="muted">
-          45-second TUI walkthrough. Local playback; no external trackers.
+          30-second simple walkthrough. Everything is behind a UUID for demo
+          purposes.
         </p>
         <figure class="demo">
-          <img src="assets/demo.gif" alt="Nowhere TUI demo animation" />
+          <img src="assets/boston_rain.gif" alt="Nowhere TUI demo animation" />
         </figure>
-        <p class="note">
-          Replace <code>docs/assets/demo.gif</code> with your file; keep the
-          name <code>demo.gif</code> for Open Graph previews.
-        </p>
-      </section>
-
-      <!-- Get started -->
-      <section id="get-started" class="block">
-        <h2>Get started</h2>
-        <ol class="list numbered">
-          <li>
-            Clone the repo and copy the environment template:
-            <pre>
-$ git clone &lt;repo-url&gt;
-$ cd view-from-nowhere
-$ cp .env.example .env</pre
-            >
-          </li>
-          <li>
-            Set secrets in <code>.env</code>: <code>DATABASE_URL</code>,
-            <code>OPENAI_API_KEY</code>, <code>TWITTER_BEARER_TOKEN</code>.
-          </li>
-          <li>
-            Initialize the database:
-            <pre>$ sqlite3 nowhere.db &lt; migrations/01_init.sql</pre>
-          </li>
-          <li>Review <code>nowhere.yaml</code>, toggle actors and models.</li>
-          <li>
-            Run the TUI:
-            <pre>$ cargo run -p nowhere-app</pre>
-          </li>
-        </ol>
       </section>
     </main>
 
     <footer class="container footer">
       <p>
-        © <span id="y"></span> Nowhere — infrastructure for rigorous
+        © <span id="y"></span> Nowhere — infrastructure for empirical
         journalism. <span class="dot">•</span>
-        <a href="https://github.com/YOUR_ORG/view-from-nowhere">GitHub</a>
+        <a href="https://github.com/viewfromnowhere/view-from-nowhere"
+          >GitHub</a
+        >
       </p>
     </footer>
 
