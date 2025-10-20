@@ -1,0 +1,31 @@
+[package]
+name = "nowhere-app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crossterm = "0.28.1"
+ratatui = { version = "0.29.0", default-features = false, features = [
+    'crossterm',
+] }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+clap = { workspace = true }
+argh = "0.1.13"
+color-eyre = { workspace = true }
+chrono = { workspace = true }
+regex = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+uuid = { workspace = true }
+time = { workspace = true }
+sqlx = { version = "0.8.6", features = [ "sqlite", "runtime-tokio-rustls", "macros", "uuid", "chrono"] }
+
+nowhere-common = { workspace = true }
+nowhere-config = { workspace = true }
+nowhere-llm = { workspace = true }
+nowhere-actors = { workspace = true }
+nowhere-runtime = { workspace = true }
+nowhere-tui = { workspace = true }
+nowhere-social = { workspace = true }

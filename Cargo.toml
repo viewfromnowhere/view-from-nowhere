@@ -1,0 +1,65 @@
+[workspace]
+resolver = "2"
+members = [
+  "nowhere-drivers",
+  "nowhere-common",
+  "nowhere-llm",
+  "nowhere-http", 
+  "nowhere-actors", 
+  "nowhere-social", 
+  "nowhere-web", 
+  "nowhere-app", 
+  "nowhere-config", 
+  "nowhere-runtime", 
+  "nowhere-tui",
+]
+
+[workspace.dependencies]
+nowhere-common = { path = "nowhere-common" }
+nowhere-drivers = { path = "nowhere-drivers" }
+nowhere-llm = { path = "nowhere-llm" }
+nowhere-http = { path = "nowhere-http" }
+nowhere-actors = { path = "nowhere-actors" }
+nowhere-social = { path = "nowhere-social" }
+nowhere-web = { path = "nowhere-web" }
+nowhere-config = { path = "nowhere-config" }
+nowhere-runtime = { path = "nowhere-runtime" }
+nowhere-tui = { path = "nowhere-tui" } 
+
+# Core async runtime 
+tokio = { version = "1.47.1", features = ["full"] }
+tokio-util = "0.7.16"
+futures = "0.3.31"
+async-stream = "0.3"
+
+# Serialization
+serde = { version = "1.0.219", features = ["rc", "derive"] }
+serde_json = "1.0.143"
+toml = "0.8"
+
+# CLI & TUI
+clap = { version = "4.5", features = ["derive", "env"] }
+# HTTP & Web
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "time", "json"] }
+tracing-appender = "0.2.3"
+
+# UUID & time
+uuid = { version = "1.18", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+time = { version = "0.3.43", features = ["serde-human-readable", "serde", "parsing", "macros"] }
+# Async traits
+async-trait = "0.1"
+color-eyre = "0.6.5"
+
+blake3 = "1.8.2"
+hex = "0.4.3"
+url = "2.5.7"
+regex = "1.11.2"

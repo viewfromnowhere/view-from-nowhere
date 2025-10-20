@@ -1,0 +1,39 @@
+# nowhere.yaml
+version: "0.1"
+
+actors:
+  # ── LLM (OpenAI) ───────────────────────────────────────────────
+  - kind: llm
+    id: "llm:main"
+    enabled: true
+    # concurrency is optional for llm; if you later shard workers, set it here.
+    concurrency: 1
+    config:
+      provider: openai
+      model: "gpt-4o"
+      auth_token: "${OPENAI_API_KEY}" # or inline, but env is safer
+      # optional; defaults shown for clarity
+      endpoint: "https://api.openai.com/v1"
+      temperature: 0.2
+      max_tokens: 1024
+
+  # ── LLM (Ollama) example (disable if you don’t use it) ─────────
+  - kind: llm
+    id: "llm:ollama"
+    enabled: false
+    concurrency: 1
+    config:
+      provider: ollama
+      model: "llama3.1:8b"
+      endpoint: "http://localhost:11434"
+      # optional knobs:
+      temperature: 0.2
+      max_tokens: 1024
+
+  # ── Twitter search workers (use your bearer token) ─────────────
+  - kind: twitter
+    id: "twitter:ingest"
+    enabled: true
+    concurrency: 2 # spawns twitter:ingest#0 and #1
+    config:
+      auth_token: "${TWITTER_BEARER_TOKEN}" # or inline string

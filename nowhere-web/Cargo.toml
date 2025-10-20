@@ -1,0 +1,25 @@
+[package]
+name = "nowhere-web"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nowhere-http = { workspace = true }
+anyhow = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+nowhere-drivers = { workspace = true }
+url = { workspace = true }
+async-trait = { workspace = true }
+blake3 = { workspace = true }
+time = { workspace = true }
+async-stream = { workspace = true }
+reqwest = { workspace = true }
+nowhere-actors = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+nowhere-llm = { workspace = true }
+chrono = { workspace = true }
+regex = { workspace = true }
+uuid = { workspace = true }

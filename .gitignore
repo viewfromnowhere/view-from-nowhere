@@ -1,0 +1,50 @@
+# Compiled files
+/target/
+/debug/
+/release/
+
+# Cargo package outputs
+**/*.rs.bk
+Cargo.lock
+# If you’re building a library, you might want to keep Cargo.lock
+# (remove this line if so!)
+
+# Build artifacts from rustc/cargo
+*.rlib
+*.rmeta
+*.dSYM
+*.dSYM.zip
+
+# Backup / swap / temp files
+*.swp
+*.swo
+*.sw?
+*~
+*.tmp
+
+# Byproducts of tests / benches
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+*.gcov
+
+# IDE / Editor settings
+.idea/
+.vscode/
+*.iml
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+
+# Logs
+*.log
+
+# sqlite
+*.db
+*.db-shm
+*.db-wal

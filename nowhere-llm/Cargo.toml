@@ -1,0 +1,36 @@
+[package]
+name = "nowhere-llm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nowhere-common = { path = "../nowhere-common", features = ["gemini", "ollama", "openai"] }
+nowhere-http = { workspace = true }
+
+# Core dependencies
+async-stream = "0.3"
+bytes = "1.10.1"
+futures = "0.3"
+reqwest = { version = "0.12", features = ["json", "stream"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing-subscriber = { workspace = true } 
+tracing-appender = { workspace = true }
+chrono = { workspace = true }
+regex = { workspace = true }
+
+[dev-dependencies]
+wiremock = "0.6"
+tempfile = "3"
+
+[features]
+default = ["ollama", "gemini", "openai"]
+ollama = ["nowhere-common/ollama"]
+gemini = ["nowhere-common/gemini"]
+openai = ["nowhere-common/openai"]
+e2e = []

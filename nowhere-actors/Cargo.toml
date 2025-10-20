@@ -1,0 +1,21 @@
+[package]
+name = "nowhere-actors"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+dashmap = "6.1.0"
+serde = { workspace = true }
+uuid = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+time = { workspace = true }
+sqlx = { version = "0.8.6", features = [ "sqlite", "runtime-tokio-rustls", "macros", "uuid", "chrono"] }
+
+nowhere-social = { workspace = true }
+nowhere-llm = { workspace = true }

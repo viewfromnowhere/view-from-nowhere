@@ -1,0 +1,25 @@
+[package]
+name = "nowhere-drivers"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nowhere-common = { path = "../nowhere-common" }
+nowhere-llm = { path = "../nowhere-llm" }
+fantoccini = "0.22.0"
+webdriver = "0.53.0"
+tokio = { workspace = true }
+futures = "0.3"
+anyhow = { workspace = true }
+uuid = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+regex = "1.11"
+url = "2.5"
+rand = { version = "0.8.5", features = ["std"] }
+async-trait = { workspace = true }
+tracing = { workspace = true }
+
+[features]
+default = ["chromium"]
+chromium = []
