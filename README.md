@@ -6,6 +6,8 @@ Philosophically, Nowhere draws from Thomas Nagel’s _The View from Nowhere_: st
 
 ---
 
+![](docs/assets/boston_rain.gif)
+
 ## Highlights
 
 - **Actor Runtime:** orchestrates acquisition → normalization → storage.
