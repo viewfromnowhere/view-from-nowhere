@@ -54,7 +54,9 @@
     <main class="container">
       <!-- Hero -->
       <section class="hero" id="about">
-        <h1>Help build the infrastructure for a new, rigorous journalism</h1>
+        <h1>
+          Engineering a new, more rigorous journalism — collaborators wanted
+        </h1>
         <p class="tagline">
           Nowhere is a terminal-first, Rust-native project that treats
           <strong>evidence</strong>, <strong>provenance</strong>, and
@@ -68,6 +70,104 @@
             >Contribute on GitHub</a
           >
           <a class="btn ghost" href="#philosophy">Read the manifesto</a>
+        </div>
+      </section>
+
+      <section id="demo" class="block">
+        <h2>Demo</h2>
+        <p class="muted">
+          30-second simple walkthrough. Everything is behind a UUID for demo
+          purposes.
+        </p>
+        <figure class="demo">
+          <img src="assets/boston_rain.gif" alt="Nowhere TUI demo animation" />
+        </figure>
+      </section>
+
+      <section id="collaborate" class="block">
+        <h2>Where help is needed</h2>
+
+        <p class="muted">
+          This is a community effort to make journalism more rigorous and
+          transparent. Not just developers — we welcome reporters, editors,
+          OSINT researchers, designers, ethicists, educators, and readers who
+          care about method.
+        </p>
+
+        <div class="card">
+          <h3>Engineering & Data</h3>
+          <ul class="list">
+            <li>
+              <strong>Runtime & actors:</strong> mailbox/backpressure tuning,
+              rate-limiter actor, cancellation semantics.
+            </li>
+            <li>
+              <strong>Evidence graph v1:</strong> schema/migrations for records,
+              links, claims; append-only discipline; signed bundles.
+            </li>
+            <li>
+              <strong>Normalizers:</strong> PDF/TXT/Twitter-like adapters with
+              prompt versioning and deterministic post-processing.
+            </li>
+            <li>
+              <strong>TUI ergonomics:</strong> claim review flows,
+              accept/counter-evidence UX, export of auditable bundles.
+            </li>
+            <li>
+              <strong>Data viz & docs:</strong> small charts, example bundles,
+              clear README/quickstart guides.
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Journalism, Product & Ethics</h3>
+          <ul class="list">
+            <li>
+              <strong>Pilot investigations:</strong> propose non-sensitive,
+              verifiable claims; help shape the workflow.
+            </li>
+            <li>
+              <strong>Method writing:</strong> checklists, reproducible
+              methodology pages, style guides for evidence bundles.
+            </li>
+            <li>
+              <strong>Editorial review & fact-checking:</strong> acceptance
+              criteria, counter-evidence norms, sourcing discipline.
+            </li>
+            <li>
+              <strong>Design & accessibility:</strong> clearer copy, UX writing,
+              contrast/typography, review of TUI interactions.
+            </li>
+            <li>
+              <strong>Ethics & redaction:</strong> practical guidance for what
+              belongs in public bundles (PII, safety, consent).
+            </li>
+            <li>
+              <strong>Legal & policy:</strong> platform ToS, FOIA workflows,
+              public-interest publication considerations.
+            </li>
+            <li>
+              <strong>Community & outreach:</strong> code of conduct,
+              onboarding, moderation, case studies, translation/localization.
+            </li>
+          </ul>
+        </div>
+
+        <div class="cta">
+          <a
+            class="btn"
+            href="https://github.com/viewfromnowhere/view-from-nowhere/issues"
+            rel="noopener"
+            >See open issues</a
+          >
+          <a
+            class="btn ghost"
+            href="https://github.com/viewfromnowhere/view-from-nowhere/discussions"
+            rel="noopener"
+            >Start a discussion</a
+          >
+          <a class="btn ghost" href="#demo">Watch the demo</a>
         </div>
       </section>
 
@@ -180,10 +280,6 @@ Auditable bundle (signed, reproducible)
             reproducible builds.
           </li>
         </ul>
-        <p class="muted">
-          See <code>VISION.md</code> and <code>ARCHITECTURE.md</code> in the
-          repo for deeper detail.
-        </p>
       </section>
 
       <!-- Nowhere-Phone -->
@@ -195,23 +291,13 @@ Auditable bundle (signed, reproducible)
           graph and reproducible bundles.
         </p>
         <p>
-          <strong>Seeking private collaborators by January 2026</strong> prior
-          to a public release. Relevant domains include resilient comms, secure
-          UX, and on-device ML.
+          <strong>Seeking private collaborators starting January 2026</strong>
+          prior to a public release. Relevant domains include resilient comms,
+          secure UX, and (potentially) on-device ML.
         </p>
       </section>
 
       <!-- Demo -->
-      <section id="demo" class="block">
-        <h2>Demo</h2>
-        <p class="muted">
-          30-second simple walkthrough. Everything is behind a UUID for demo
-          purposes.
-        </p>
-        <figure class="demo">
-          <img src="assets/boston_rain.gif" alt="Nowhere TUI demo animation" />
-        </figure>
-      </section>
     </main>
 
     <footer class="container footer">
