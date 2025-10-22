@@ -119,7 +119,51 @@ impl NowhereConfigLoader {
         self
     }
 
-    /// Consume builder, deserialize into strongly typed config.
+    /// Consume the builder and deserialize the merged sources into strongly typed config.
+    ///
+    /// The loader combines YAML snippets with `NOWHERE_`-prefixed environment variables
+    /// and expands `${VAR}` placeholders before materialising strongly typed structs.
+    ///
+    /// ```
+    /// use nowhere_config::{ActorDetails, LlmConfig, NowhereConfigLoader};
+    ///
+    /// std::env::set_var("API_TOKEN", "injected-from-env");
+    ///
+    /// let config = NowhereConfigLoader::new()
+    ///     .with_yaml_str(r#"
+    /// version: "1"
+    /// actors:
+    ///   - id: "primary-llm"
+    ///     kind: "llm"
+    ///     config:
+    ///       provider: "openai"
+    ///       model: "gpt-4o"
+    ///       auth_token: "${API_TOKEN}"
+    /// "#)
+    ///     .load()
+    ///     .expect("valid configuration");
+    ///
+    /// assert_eq!(config.version.as_deref(), Some("1"));
+    /// assert_eq!(config.actors[0].id, "primary-llm");
+    ///
+    /// match &config.actors[0].details {
+    ///     ActorDetails::Llm {
+    ///         config: LlmConfig::Openai {
+    ///             model,
+    ///             auth_token,
+    ///             endpoint,
+    ///             ..
+    ///         },
+    ///     } => {
+    ///         assert_eq!(model, "gpt-4o");
+    ///         assert_eq!(auth_token, "injected-from-env");
+    ///         assert_eq!(endpoint, "https://api.openai.com/v1");
+    ///     }
+    ///     _ => panic!("expected OpenAI configuration"),
+    /// }
+    ///
+    /// std::env::remove_var("API_TOKEN");
+    /// ```
     pub fn load(self) -> Result<NowhereConfig, ConfigError> {
         let cfg = self.builder.build()?;
 
