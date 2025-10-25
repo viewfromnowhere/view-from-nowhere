@@ -121,6 +121,17 @@ pub enum HttpError {
 // Auth & Request Options
 // ==============================
 
+/// Authentication strategies supported by the HTTP client helpers.
+///
+/// ```
+/// use nowhere_http::Auth;
+///
+/// let bearer = Auth::Bearer("token");
+/// match bearer {
+///     Auth::Bearer(value) => assert_eq!(value, "token"),
+///     _ => unreachable!(),
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub enum Auth<'a> {
     /// Authorization: Bearer <token>
@@ -138,6 +149,26 @@ pub enum Auth<'a> {
     None,
 }
 
+/// Per-request tuning knobs for the HTTP client.
+///
+/// ```
+/// use nowhere_http::{Auth, RequestOpts};
+/// use std::borrow::Cow;
+/// use std::time::Duration;
+///
+/// let opts = RequestOpts {
+///     timeout: Some(Duration::from_secs(30)),
+///     retries: Some(1),
+///     auth: Some(Auth::Query {
+///         name: "apikey",
+///         value: Cow::Borrowed("demo"),
+///     }),
+///     ..Default::default()
+/// };
+///
+/// assert_eq!(opts.timeout.unwrap().as_secs(), 30);
+/// assert!(opts.allow_absolute == false);
+/// ```
 #[derive(Clone, Debug, Default)]
 pub struct RequestOpts<'a> {
     pub timeout: Option<Duration>,
@@ -162,6 +193,17 @@ pub struct HttpClient {
 }
 
 impl HttpClient {
+    /// Construct a client anchored to a base URL.
+    ///
+    /// ```no_run
+    /// use nowhere_http::{HttpClient, HttpError};
+    /// use std::time::Duration;
+    ///
+    /// let client = HttpClient::new("https://api.example.com")?;
+    /// assert_eq!(client.default_timeout, Duration::from_secs(15));
+    /// assert_eq!(client.max_retries, 2);
+    /// # Ok::<(), HttpError>(())
+    /// ```
     pub fn new(base: &str) -> Result<Self, HttpError> {
         let base = Url::parse(base).map_err(|e| HttpError::Url(e.to_string()))?;
         let inner = Client::builder()
@@ -176,11 +218,31 @@ impl HttpClient {
         })
     }
 
+    /// Override the default timeout returned by [`HttpClient::new`].
+    ///
+    /// ```no_run
+    /// use nowhere_http::{HttpClient, HttpError};
+    /// use std::time::Duration;
+    ///
+    /// let client = HttpClient::new("https://api.example.com")?
+    ///     .with_timeout(Duration::from_secs(2));
+    /// assert_eq!(client.default_timeout, Duration::from_secs(2));
+    /// # Ok::<(), HttpError>(())
+    /// ```
     pub fn with_timeout(mut self, dur: Duration) -> Self {
         self.default_timeout = dur;
         self
     }
 
+    /// Override the default retry budget returned by [`HttpClient::new`].
+    ///
+    /// ```no_run
+    /// use nowhere_http::{HttpClient, HttpError};
+    ///
+    /// let client = HttpClient::new("https://api.example.com")?.with_retries(5);
+    /// assert_eq!(client.max_retries, 5);
+    /// # Ok::<(), HttpError>(())
+    /// ```
     pub fn with_retries(mut self, n: usize) -> Self {
         self.max_retries = n;
         self

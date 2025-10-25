@@ -96,6 +96,19 @@ impl Default for NowhereConfigLoader {
 
 impl NowhereConfigLoader {
     /// Start with sensible defaults: YAML file + `NOWHERE_` env overrides.
+    ///
+    /// ```
+    /// use nowhere_config::NowhereConfigLoader;
+    ///
+    /// let loader = NowhereConfigLoader::new();
+    /// let config = loader
+    ///     .with_yaml_str("version: '1'\nactors: []")
+    ///     .load()
+    ///     .expect("valid config");
+    ///
+    /// assert_eq!(config.version.as_deref(), Some("1"));
+    /// assert!(config.actors.is_empty());
+    /// ```
     pub fn new() -> Self {
         let builder =
             Config::builder().add_source(Environment::with_prefix("NOWHERE").separator("__"));
@@ -112,6 +125,29 @@ impl NowhereConfigLoader {
     }
 
     /// Allow tests/CLI to merge inline YAML snippets.
+    ///
+    /// ```
+    /// use nowhere_config::{ActorDetails, NowhereConfigLoader};
+    ///
+    /// let cfg = NowhereConfigLoader::new()
+    ///     .with_yaml_str(
+    ///         r#"
+    /// version: "test"
+    /// actors:
+    ///   - id: "noop"
+    ///     enabled: true
+    ///     kind: "twitter"
+    ///     config:
+    ///       auth_token: "example"
+    /// "#,
+    ///     )
+    ///     .load()
+    ///     .unwrap();
+    ///
+    /// assert_eq!(cfg.version.as_deref(), Some("test"));
+    /// assert_eq!(cfg.actors.len(), 1);
+    /// assert!(matches!(cfg.actors[0].details, ActorDetails::Twitter { .. }));
+    /// ```
     pub fn with_yaml_str(mut self, yaml: &str) -> Self {
         self.builder = self
             .builder
@@ -127,7 +163,7 @@ impl NowhereConfigLoader {
     /// ```
     /// use nowhere_config::{ActorDetails, LlmConfig, NowhereConfigLoader};
     ///
-    /// std::env::set_var("API_TOKEN", "injected-from-env");
+    /// unsafe { std::env::set_var("API_TOKEN", "injected-from-env"); }
     ///
     /// let config = NowhereConfigLoader::new()
     ///     .with_yaml_str(r#"
@@ -162,7 +198,7 @@ impl NowhereConfigLoader {
     ///     _ => panic!("expected OpenAI configuration"),
     /// }
     ///
-    /// std::env::remove_var("API_TOKEN");
+    /// unsafe { std::env::remove_var("API_TOKEN"); }
     /// ```
     pub fn load(self) -> Result<NowhereConfig, ConfigError> {
         let cfg = self.builder.build()?;

@@ -77,6 +77,32 @@ impl Default for LlmConfig {
 ///
 /// This structure is passed to orchestrators and UI entrypoints to
 /// configure runtime behavior.
+///
+/// ```
+/// use nowhere_common::{
+///     ApprovalMode, LlmConfig, NowhereConfig, OutputFormat, Result, StealthLevel,
+/// };
+///
+/// let cfg = NowhereConfig::default();
+/// assert_eq!(cfg.max_concurrent_agents, 5);
+/// assert_eq!(cfg.default_timeout_secs, 60);
+/// assert!(!cfg.headless);
+/// assert_eq!(cfg.max_rabbit_hole_depth, Some(3));
+/// assert!(matches!(cfg.stealth_level, StealthLevel::Balanced));
+/// assert!(matches!(cfg.approval_mode, ApprovalMode::Interactive));
+/// assert!(matches!(cfg.output_format, OutputFormat::Json));
+/// assert!(matches!(cfg.llm_config, LlmConfig::None));
+///
+/// fn uses_config(cfg: &NowhereConfig) -> Result<()> {
+///     if cfg.max_concurrent_agents > 0 {
+///         Ok(())
+///     } else {
+///         Err(nowhere_common::NowhereError::Config("concurrency missing".into()))
+///     }
+/// }
+///
+/// uses_config(&cfg).expect("default config is viable");
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NowhereConfig {
     // FIXME: consolidate this configuration model with `nowhere-config::NowhereConfig` to avoid two divergent sources of truth.
@@ -139,6 +165,16 @@ pub enum OutputFormat {
 }
 
 /// Error types used across the Nowhere system.
+///
+/// ```
+/// use nowhere_common::{NowhereError, Result};
+///
+/// fn may_timeout() -> Result<()> {
+///     Err(NowhereError::Timeout)
+/// }
+///
+/// assert!(matches!(may_timeout(), Err(NowhereError::Timeout)));
+/// ```
 #[derive(thiserror::Error, Debug)]
 pub enum NowhereError {
     /// An agent failed to complete a requested operation.
@@ -163,4 +199,19 @@ pub enum NowhereError {
 }
 
 /// Convenient alias for results that use [`NowhereError`].
+///
+/// ```
+/// use nowhere_common::{NowhereError, Result};
+///
+/// fn check(flag: bool) -> Result<&'static str> {
+///     if flag {
+///         Ok("ready")
+///     } else {
+///         Err(NowhereError::Agent("disabled".into()))
+///     }
+/// }
+///
+/// assert_eq!(check(true).unwrap(), "ready");
+/// assert!(check(false).is_err());
+/// ```
 pub type Result<T> = std::result::Result<T, NowhereError>;
