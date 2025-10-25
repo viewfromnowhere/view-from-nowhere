@@ -21,10 +21,62 @@ pub struct Context<A: Actor> {
 
 impl<A: Actor> Context<A> {
     /// Get a clone of this actor's `Addr`.
+    ///
+    /// ```
+    /// # use anyhow::Result;
+    /// # use async_trait::async_trait;
+    /// # use nowhere_actors::actor::{self, Actor, Context};
+    /// # struct SelfPing;
+    /// # #[async_trait]
+    /// # impl Actor for SelfPing {
+    /// #     type Msg = u8;
+    /// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+    /// #         if msg == 0 {
+    /// #             ctx.addr().try_send(1).unwrap();
+    /// #         } else {
+    /// #             ctx.stop();
+    /// #         }
+    /// #         Ok(())
+    /// #     }
+    /// # }
+    /// let rt = tokio::runtime::Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     let actor::ActorHandle { addr, task } = actor::spawn_actor(SelfPing, 2);
+    ///     addr.send(0).await.unwrap();
+    ///     drop(addr);
+    ///     task.await.unwrap().unwrap();
+    /// });
+    /// ```
     pub fn addr(&self) -> Addr<A> {
         self.addr.clone()
     }
     /// Request a graceful stop after processing the current message.
+    ///
+    /// ```
+    /// # use anyhow::Result;
+    /// # use async_trait::async_trait;
+    /// # use nowhere_actors::actor::{self, Actor, Context};
+    /// # struct StopOnSecond(u8);
+    /// # #[async_trait]
+    /// # impl Actor for StopOnSecond {
+    /// #     type Msg = u8;
+    /// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+    /// #         self.0 += msg;
+    /// #         if self.0 >= 2 {
+    /// #             ctx.stop();
+    /// #         }
+    /// #         Ok(())
+    /// #     }
+    /// # }
+    /// let rt = tokio::runtime::Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     let actor::ActorHandle { addr, task } = actor::spawn_actor(StopOnSecond(0), 4);
+    ///     addr.send(1).await.unwrap();
+    ///     addr.send(1).await.unwrap();
+    ///     drop(addr);
+    ///     task.await.unwrap().unwrap();
+    /// });
+    /// ```
     pub fn stop(&mut self) {
         self.stop = true;
     }
@@ -42,16 +94,88 @@ impl<A: Actor> Clone for Addr<A> {
 
 impl<A: Actor> Addr<A> {
     /// Async send; awaits backpressure. Returns the message if the receiver is dropped.
+    ///
+    /// ```
+    /// # use anyhow::Result;
+    /// # use async_trait::async_trait;
+    /// # use nowhere_actors::actor::{self, Actor, Context};
+    /// # struct Counter(u8);
+    /// # #[async_trait]
+    /// # impl Actor for Counter {
+    /// #     type Msg = u8;
+    /// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+    /// #         self.0 += msg;
+    /// #         if self.0 >= 3 {
+    /// #             ctx.stop();
+    /// #         }
+    /// #         Ok(())
+    /// #     }
+    /// # }
+    /// let rt = tokio::runtime::Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     let actor::ActorHandle { addr, task } = actor::spawn_actor(Counter(0), 4);
+    ///     addr.send(1).await.unwrap();
+    ///     addr.send(2).await.unwrap();
+    ///     drop(addr);
+    ///     task.await.unwrap().unwrap();
+    /// });
+    /// ```
     pub async fn send(&self, msg: A::Msg) -> std::result::Result<(), A::Msg> {
         self.0.send(msg).await.map_err(|e| e.0)
     }
 
     /// Try to send without waiting. Returns the message if the mailbox is full or closed.
+    ///
+    /// ```
+    /// # use anyhow::Result;
+    /// # use async_trait::async_trait;
+    /// # use nowhere_actors::actor::{self, Actor, Context};
+    /// # struct Immediate;
+    /// # #[async_trait]
+    /// # impl Actor for Immediate {
+    /// #     type Msg = &'static str;
+    /// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+    /// #         assert_eq!(msg, "hello");
+    /// #         ctx.stop();
+    /// #         Ok(())
+    /// #     }
+    /// # }
+    /// let rt = tokio::runtime::Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     let actor::ActorHandle { addr, task } = actor::spawn_actor(Immediate, 1);
+    ///     addr.try_send("hello").unwrap();
+    ///     drop(addr);
+    ///     task.await.unwrap().unwrap();
+    /// });
+    /// ```
     pub fn try_send(&self, msg: A::Msg) -> std::result::Result<(), A::Msg> {
         self.0.try_send(msg).map_err(|e| e.into_inner())
     }
 
     /// Bounded mailbox capacity.
+    ///
+    /// ```
+    /// # use anyhow::Result;
+    /// # use async_trait::async_trait;
+    /// # use nowhere_actors::actor::{self, Actor, Context};
+    /// # struct Noop;
+    /// # #[async_trait]
+    /// # impl Actor for Noop {
+    /// #     type Msg = ();
+    /// #     async fn handle(&mut self, _msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+    /// #         ctx.stop();
+    /// #         Ok(())
+    /// #     }
+    /// # }
+    /// let rt = tokio::runtime::Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     let actor::ActorHandle { addr, task } = actor::spawn_actor(Noop, 8);
+    ///     assert_eq!(addr.capacity(), 8);
+    ///     addr.send(()).await.unwrap();
+    ///     drop(addr);
+    ///     task.await.unwrap().unwrap();
+    /// });
+    /// ```
     pub fn capacity(&self) -> usize {
         self.0.max_capacity()
     }
@@ -72,17 +196,30 @@ pub struct ActorHandle<A: Actor> {
 ///
 /// Panics: none expected inside the runtime path; prefer returning `Err`.
 ///
-/// Example (no_run):
-/// ```rust
+/// ```
 /// # use anyhow::Result;
-/// # use nowhere_actors::{Actor, Context, spawn_actor};
-/// # struct Ping;
-/// # #[async_trait::async_trait]
-/// # impl Actor for Ping { type Msg = (); async fn handle(&mut self, _m: Self::Msg, _c: &mut Context<Self>) -> Result<()> { Ok(()) } }
-/// # async fn demo() {
-/// let h = spawn_actor(Ping, 64);
-/// let _ = h.addr.send(()).await;
+/// # use async_trait::async_trait;
+/// # use nowhere_actors::actor::{self, Actor, Context};
+/// # struct Accumulator(u8);
+/// # #[async_trait]
+/// # impl Actor for Accumulator {
+/// #     type Msg = u8;
+/// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+/// #         self.0 += msg;
+/// #         if self.0 >= 5 {
+/// #             ctx.stop();
+/// #         }
+/// #         Ok(())
+/// #     }
 /// # }
+/// let rt = tokio::runtime::Runtime::new().unwrap();
+/// rt.block_on(async {
+///     let actor::ActorHandle { addr, task } = actor::spawn_actor(Accumulator(0), 8);
+///     addr.send(2).await.unwrap();
+///     addr.send(3).await.unwrap();
+///     drop(addr);
+///     task.await.unwrap().unwrap();
+/// });
 /// ```
 pub fn spawn_actor<A: Actor>(actor: A, capacity: usize) -> ActorHandle<A> {
     spawn_actor_with_shutdown(actor, capacity, None)
@@ -158,6 +295,31 @@ impl<A: Actor> Reserved<A> {
     }
 
     /// Start the actor task using the reserved mailbox (panic if called twice).
+    ///
+    /// ```
+    /// # use anyhow::Result;
+    /// # use async_trait::async_trait;
+    /// # use nowhere_actors::actor::{self, Actor, Context};
+    /// # struct Echo;
+    /// # #[async_trait]
+    /// # impl Actor for Echo {
+    /// #     type Msg = &'static str;
+    /// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+    /// #         assert_eq!(msg, "ping");
+    /// #         ctx.stop();
+    /// #         Ok(())
+    /// #     }
+    /// # }
+    /// let rt = tokio::runtime::Runtime::new().unwrap();
+    /// rt.block_on(async {
+    ///     let reserved = actor::spawn_actor_reserved::<Echo>("echo", 4);
+    ///     let addr = reserved.addr();
+    ///     let handle = reserved.start(Echo);
+    ///     addr.send("ping").await.unwrap();
+    ///     drop(addr);
+    ///     handle.task.await.unwrap().unwrap();
+    /// });
+    /// ```
     pub fn start(self, actor: A) -> ActorHandle<A> {
         self.start_with_shutdown(actor, None)
     }
@@ -220,6 +382,31 @@ impl<A: Actor> Reserved<A> {
 }
 
 /// Factory for reservation.
+///
+/// ```
+/// # use anyhow::Result;
+/// # use async_trait::async_trait;
+/// # use nowhere_actors::actor::{self, Actor, Context};
+/// # struct Echo;
+/// # #[async_trait]
+/// # impl Actor for Echo {
+/// #     type Msg = &'static str;
+/// #     async fn handle(&mut self, msg: Self::Msg, ctx: &mut Context<Self>) -> Result<()> {
+/// #         assert_eq!(msg, "ping");
+/// #         ctx.stop();
+/// #         Ok(())
+/// #     }
+/// # }
+/// let rt = tokio::runtime::Runtime::new().unwrap();
+/// rt.block_on(async {
+///     let reserved = actor::spawn_actor_reserved::<Echo>("echo", 4);
+///     let addr = reserved.addr();
+///     let handle = reserved.start(Echo);
+///     addr.send("ping").await.unwrap();
+///     drop(addr);
+///     handle.task.await.unwrap().unwrap();
+/// });
+/// ```
 pub fn spawn_actor_reserved<A: Actor>(name: impl Into<String>, capacity: usize) -> Reserved<A> {
     let name = name.into();
     let (tx, rx) = mpsc::channel::<A::Msg>(capacity);
