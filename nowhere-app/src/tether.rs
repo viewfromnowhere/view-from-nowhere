@@ -13,8 +13,6 @@ use nowhere_tui::{TuiActor, spawn_tui_feeders};
 use sqlx::SqlitePool;
 use std::sync::Arc;
 
-const DEFAULT_MAILBOX: usize = 1024;
-
 pub struct Tether {
     builder: Builder,
 }
@@ -227,5 +225,122 @@ pub async fn build_llm_client(cfg: &LlmConfig) -> Result<Arc<dyn LlmClient + Sen
             let client = OllamaClient::new(endpoint.clone(), model.clone()).await?;
             Ok(Arc::new(client))
         }
+    }
+}
+
+#[cfg(test)]
+mod db_env_tests {
+    /// RAII guard that restores the env var on drop.
+    pub struct EnvGuard {
+        key: String,
+        original: Option<String>,
+    }
+    impl EnvGuard {
+        pub fn set<K: Into<String>, V: Into<String>>(key: K, value: V) -> Self {
+            let key = key.into();
+            let original = std::env::var(&key).ok();
+            unsafe {
+                std::env::set_var(&key, value.into());
+            }
+            Self { key, original }
+        }
+        pub fn unset<K: Into<String>>(key: K) -> Self {
+            let key = key.into();
+            let original = std::env::var(&key).ok();
+            unsafe {
+                std::env::remove_var(&key);
+            }
+            Self { key, original }
+        }
+    }
+    impl Drop for EnvGuard {
+        fn drop(&mut self) {
+            if let Some(ref v) = self.original {
+                unsafe {
+                    std::env::set_var(&self.key, v);
+                }
+            } else {
+                unsafe {
+                    std::env::remove_var(&self.key);
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod wiring_tests {
+    use super::*;
+    use nowhere_config::{ActorDetails, ActorSpec, LlmConfig, NowhereConfig};
+
+    fn cfg_minimal() -> NowhereConfig {
+        NowhereConfig {
+            version: None,
+            // adjust if your struct has more fields
+            actors: vec![
+                ActorSpec {
+                    id: "llm:main".into(),
+                    enabled: Some(true),
+                    concurrency: Some(1),
+                    details: ActorDetails::Llm {
+                        config: LlmConfig::Openai {
+                            model: "gpt-4o-mini".into(),
+                            auth_token: "sk-test".into(),
+                            temperature: None,
+                            max_tokens: None,
+                            endpoint: "test".into(),
+                        },
+                    },
+                },
+                ActorSpec {
+                    id: "twitter:ingest".into(),
+                    enabled: Some(true),
+                    concurrency: Some(2),
+                    details: ActorDetails::Twitter {
+                        config: nowhere_config::TwitterConfig {
+                            auth_token: "bearer-test".into(), /* … */
+                        },
+                    },
+                },
+            ],
+        }
+    }
+
+    #[tokio::test]
+    async fn build_registers_expected_addresses() {
+        // Arrange: in-memory DB
+        let _db = super::db_env_tests::EnvGuard::set("DATABASE_URL", "sqlite::memory:");
+        let mut t = Tether::new();
+        let cfg = cfg_minimal();
+
+        // Act
+        build_from_config(&mut t, cfg).await.expect("build ok");
+
+        // Assert: the builder exposes addresses you expect
+        let b = t.builder_mut();
+
+        // infra
+        assert!(
+            b.addr::<RateLimiter>("rate:main").is_some(),
+            "rate limiter should be running"
+        );
+        assert!(
+            b.addr::<StoreActor>("store:main").is_some(),
+            "store should be running"
+        );
+
+        // LLM and chat LLM started at known names
+        assert!(b.addr::<LlmActor>("llm:main").is_some(), "llm actor");
+        assert!(
+            b.addr::<ChatLlmActor>("llm:main#chat").is_some(),
+            "chat llm actor"
+        );
+
+        // Twitter workers pooled under the spec id with #i suffix
+        assert!(b.addr::<TwitterSearchActor>("twitter:ingest#0").is_some());
+        assert!(b.addr::<TwitterSearchActor>("twitter:ingest#1").is_some());
+
+        // TUI started last
+        assert!(b.addr::<nowhere_tui::TuiActor>("tui:main").is_some());
     }
 }
