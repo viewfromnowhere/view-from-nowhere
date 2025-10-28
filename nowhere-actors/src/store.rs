@@ -1,3 +1,8 @@
+//! SQLite-backed persistence actor for claims, artifacts, and entities.
+//!
+//! Responsibilities include serialized write coordination, FTS-backed searches, and
+//! watcher fan-out when artifacts relevant to a claim arrive. More detailed docs should
+//! describe the schema expectations, concurrency model, and error propagation strategy.
 use crate::actor::Actor;
 use crate::actor::Context;
 use crate::ClaimContext;
@@ -28,6 +33,7 @@ impl StoreActor {
     }
 }
 
+// FIXME: cover store message handling end-to-end with tests (claim inserts, artifact upserts, watcher notifications) to prevent regressions in the async spawning logic.
 #[async_trait::async_trait]
 impl Actor for StoreActor {
     type Msg = StoreMsg;

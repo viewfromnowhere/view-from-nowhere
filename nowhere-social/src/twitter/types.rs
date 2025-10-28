@@ -1,3 +1,8 @@
+//! Serde models mirroring the Twitter/X v2 search response payloads.
+//!
+//! Components include `Tweet`, `Includes`, and pagination metadata. Extend this module
+//! when new fields become necessary, and document how optional values map into internal
+//! normalization steps.
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

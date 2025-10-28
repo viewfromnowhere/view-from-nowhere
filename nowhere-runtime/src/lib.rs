@@ -1,3 +1,7 @@
+//! Tokio runtime wrappers shared across the workspace.
+//!
+//! The module-level API is stable, but we still need deeper docs on cancellation semantics
+//! and how the runtime integrates with the actor system’s shutdown sequencing.
 use anyhow::Result;
 use std::sync::Arc;
 use tokio::runtime::{Builder, Handle, Runtime};

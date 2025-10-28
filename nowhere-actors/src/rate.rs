@@ -75,6 +75,7 @@ impl BucketState {
     }
 }
 
+// FIXME: add unit tests covering bursts, refill timing, and multiple concurrent `Acquire` callers so rate limiting regressions surface quickly.
 pub struct RateLimiter {
     buckets: HashMap<RateKey, BucketState>,
 }

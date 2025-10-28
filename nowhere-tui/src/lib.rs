@@ -1,3 +1,8 @@
+//! Terminal UI orchestration for claims, chat, and evidence review.
+//!
+//! The submodules expose command parsing, feed loops, and view rendering; they still
+//! require higher-level docs explaining how messages propagate between the TUI and
+//! actor runtime.
 mod command;
 mod feeders;
 mod styles;

@@ -1,7 +1,13 @@
+//! Loader for workspace configuration with YAML + environment overlays.
+//!
+//! More documentation is needed to describe the expected schema for `nowhere.yaml`,
+//! precedence rules, and how `${VAR}` expansion interacts with optional files.
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 use serde_json::Value;
 use std::path::Path;
+
+const MAXIMUM_ENV_EXPANSION_DEPTH: usize = 8;
 
 #[derive(Debug, Deserialize)]
 pub struct NowhereConfig {
@@ -68,13 +74,23 @@ fn default_ollama_endpoint() -> String {
     "http://localhost:11434".into()
 }
 
+// FIXME: cover recursive `${VAR}` expansion and arrays/objects in unit tests so env interpolation stays deterministic.
 fn expand_env_in_value(v: &mut Value) {
     match v {
         Value::String(s) => {
-            if s.contains('$')
-                && let Ok(expanded) = shellexpand::env(s)
-            {
-                *s = expanded.into_owned();
+            if s.contains('$') {
+                let mut cur = std::mem::take(s);
+                for _ in 0..MAXIMUM_ENV_EXPANSION_DEPTH {
+                    let expanded = match shellexpand::env(&cur) {
+                        Ok(cow) => cow.into_owned(),
+                        Err(_) => cur.clone(),
+                    };
+                    if expanded == cur {
+                        break;
+                    }
+                    cur = expanded;
+                }
+                *s = cur;
             }
         }
         Value::Array(arr) => arr.iter_mut().for_each(expand_env_in_value),
@@ -213,5 +229,78 @@ impl NowhereConfigLoader {
             serde_json::from_value(v).map_err(|e| config::ConfigError::Message(e.to_string()))?;
 
         Ok(typed)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    use temp_env;
+
+    #[test]
+    fn expands_simple_string() {
+        temp_env::with_var("FOO", Some("bar"), || {
+            let mut v = json!("prefix-${FOO}-suffix");
+            expand_env_in_value(&mut v);
+            assert_eq!(v, json!("prefix-bar-suffix"));
+        });
+    }
+
+    #[test]
+    fn expands_in_array_and_object() {
+        temp_env::with_vars([("CITY", Some("Winston")), ("STATE", Some("NC"))], || {
+            let mut v = json!([
+                "hello-$CITY",
+                { "loc": "${CITY}-${STATE}" },
+                42,
+                true,
+                null
+            ]);
+            expand_env_in_value(&mut v);
+            assert_eq!(
+                v,
+                json!(["hello-Winston", { "loc": "Winston-NC" }, 42, true, null])
+            );
+        });
+    }
+
+    #[test]
+    fn expands_recursively_across_env_values() {
+        temp_env::with_vars(
+            [
+                // BAR references BAZ; FOO references BAR — two hops.
+                ("BAZ", Some("qux")),
+                ("BAR", Some("mid-${BAZ}")),
+                ("FOO", Some("start-${BAR}-end")),
+            ],
+            || {
+                let mut v = json!("X=${FOO}");
+                // Without recursive expansion this would stop at "X=start-${BAR}-end".
+                expand_env_in_value(&mut v);
+                assert_eq!(v, json!("X=start-mid-qux-end"));
+            },
+        );
+    }
+
+    #[test]
+    fn stops_on_cycles_and_leaves_value_reasonable() {
+        temp_env::with_vars([("A", Some("${B}")), ("B", Some("${A}"))], || {
+            let mut v = json!("x=${A}-y");
+            // We don't care about exact final string, only that the function terminates
+            // and doesn't loop forever. With the depth cap, this will stop.
+            expand_env_in_value(&mut v);
+            let s = v.as_str().unwrap();
+            assert!(s.starts_with("x=") && s.ends_with("-y"));
+            // And we expect it to still contain unresolved ${...} due to the cycle.
+            assert!(s.contains("${"));
+        });
+    }
+
+    #[test]
+    fn unknown_vars_are_left_as_is() {
+        let mut v = json!("hi-${DOES_NOT_EXIST}");
+        expand_env_in_value(&mut v);
+        assert_eq!(v, json!("hi-${DOES_NOT_EXIST}"));
     }
 }

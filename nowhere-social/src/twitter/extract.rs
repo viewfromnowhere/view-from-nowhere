@@ -1,3 +1,8 @@
+//! Helpers for normalizing Twitter/X JSON payloads into Nowhere artifacts.
+//!
+//! The implementation is currently commented out pending upstream integration, but the
+//! skeleton outlines how media, metrics, and entity data should map into workspace types.
+//! Once revived, document the normalization contract and expected error handling.
 // use anyhow::{Context, Result};
 // use time::OffsetDateTime;
 // use url::Url;

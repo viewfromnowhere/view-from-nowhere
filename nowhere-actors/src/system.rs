@@ -1,3 +1,8 @@
+//! Core actor system bookkeeping for task tracking and shutdown signaling.
+//!
+//! Actors subscribe to the broadcast channel for cooperative shutdown, while the
+//! `JoinSet` ensures spawned tasks are awaited during teardown. Future docs should
+//! clarify cancellation ordering and how many outstanding tasks the channel can buffer.
 use anyhow::Result;
 use tokio::{sync::broadcast, task::JoinSet};
 

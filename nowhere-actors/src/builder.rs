@@ -1,3 +1,9 @@
+//! Builder for wiring actors together and managing their lifecycle.
+//!
+//! It reserves mailboxes up front, exposes typed `Addr` handles via the registry,
+//! and tracks spawned tasks so the `ActorSystem` can coordinate graceful shutdowns.
+//! Additional documentation should enumerate the expected naming conventions and
+//! the order in which infrastructure versus app actors are typically started.
 use crate::actor::{
     spawn_actor_reserved, spawn_actor_with_shutdown, Actor, ActorHandle, Addr, Reserved,
 };
