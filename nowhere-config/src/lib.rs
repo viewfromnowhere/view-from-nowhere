@@ -74,6 +74,7 @@ fn default_ollama_endpoint() -> String {
     "http://localhost:11434".into()
 }
 
+// FIXME: cover recursive `${VAR}` expansion and arrays/objects in unit tests so env interpolation stays deterministic.
 fn expand_env_in_value(v: &mut Value) {
     match v {
         Value::String(s) => {
