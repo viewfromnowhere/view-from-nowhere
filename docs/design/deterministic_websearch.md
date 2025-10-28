@@ -76,9 +76,17 @@ This note sketches how to make the Brave-powered `WebSearchActor` participate in
   4. Re-applies effects or checks them against current state.  
   Any divergence (missing blob, mismatched digest, different effect) becomes an audit failure.
 
+- **Runtime integration (`nowhere-runtime`)**  
+  The current `nowhere-app` bypasses `nowhere-runtime`, relying directly on Tokio. To support deterministic capsules:  
+  - Extend `nowhere-runtime` with a scheduler API (`issue_ticket`) that returns `{clock, parent_hashes}` and exposes the shared cancellation token.  
+  - Add a capsule ledger trait (`CapsuleStore`) and blob store abstraction so actors can persist provenance records without knowing storage details.  
+  - Provide an effect dispatcher that applies queued effects only after a capsule is sealed, mirroring a commit log.  
+  - Expose a replay harness (`ReplayVm`) that the CLI/TUI can invoke to validate or reapply capsules.  
+  Once these primitives exist, `nowhere-app` should initialize `NowhereRuntime`, hand its handles into the actor builder, and ensure actors opt into deterministic scheduling.
+
 - **Next steps**  
   1. Add instrumentation to the existing Brave client to emit the structured request/response.  
-  2. Extend the actor runtime with a capsule builder that seals hashes before releasing effects.  
+  2. Extend `nowhere-runtime` with capsule builder, scheduler, and effect commit APIs.  
   3. Build CLI tooling (`nowhere-runtime replay --actor web_search.brave --claim <id>`) to run the VM.  
   4. Promote capsule hashes to the evidence ledger so downstream logic can cite deterministic search steps.
 
