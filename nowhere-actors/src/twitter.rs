@@ -1,3 +1,8 @@
+//! Actor that orchestrates Twitter/X searches and forwards results to the LLM pipeline.
+//!
+//! It enforces rate limiting, normalizes temporal windows, and fans out fetched tweets
+//! as `RawArtifact` messages. Further documentation should outline pagination strategy
+//! and resilience plans for transient HTTP or auth failures.
 use crate::actor::{Actor, Addr, Context};
 use crate::llm::LlmActor;
 use crate::rate::{RateKey, RateLimiter, RateMsg};
@@ -47,6 +52,7 @@ impl TwitterSearchActor {
         self
     }
 
+    // FIXME: add unit tests for chrono->time conversion to ensure overflow and error branches behave as expected on boundary timestamps.
     fn chrono_to_offset(dt: DateTime<Utc>) -> Result<OffsetDateTime> {
         let nanos = dt
             .timestamp_nanos_opt()

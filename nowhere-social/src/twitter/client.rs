@@ -1,3 +1,8 @@
+//! Minimal wrapper around the Twitter/X search API with Nowhere defaults.
+//!
+//! Handles auth, request parameter shaping, and safe time windows before delegating to
+//! the shared HTTP client. Future documentation should cover pagination (`next_token`)
+//! handling once implemented.
 use crate::twitter::types::SearchResponse;
 use anyhow::Result;
 use nowhere_http::{Auth, HttpClient, RequestOpts};

@@ -1,3 +1,10 @@
+//! Actor implementations and message contracts for the Nowhere runtime.
+//!
+//! This crate houses the concrete actors (rate limiter, store, LLM wiring, social ingest)
+//! along with the shared message types that glue them together. Many of the individual
+//! modules still need narrative documentation describing their life cycle hooks and
+//! cross-crate dependencies (e.g. `builder`, `system`, `store`), so keep this entrypoint
+//! as the hub for future docs.
 pub mod actor;
 pub mod builder;
 pub mod llm;
